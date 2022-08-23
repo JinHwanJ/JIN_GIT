@@ -1,0 +1,497 @@
+
+Database : 특정 기업이나 조직 또는 개인이 필요에 의해 논리적으로 연관된 데이터를 모아 일정한 형태 (정형 데이터)로 저장해 놓은 것 
+중복 데이터 최소화, 데이터 불일치 현상 제거한 통합된 데이터
+file, disk, tape 저장장치에 저장된 데이터
+업무를 위한 검색을 할 목적으로 저장된  운영 데이터
+실시간 접근성 
+내용에 의한 참조
+공유 데이터
+
+
+DBMS(Database Management System) : Database 관리 프로그램
+DBMS를 이용해서 데이터를 공유
+데이터의 일관성 유지
+데이터의 독립성 유지
+데이터를 장애로부터 보호, 복구
+데이터의  보안
+데이터의 동시성 제어 (Lock) 
+데이터 관리 기능 제공
+
+DBMS 의 역사 : 
+1960년대 : 계층형 DBMS(1:M 참조, 물리적인 pointer), 망형 DBMS (N:M 참조, 물리적인 pointer)
+1970년대 :  관계형 DBMS (수학의 관계 대수를 이용한 논리적인 참조)
+1990년대 : ORDBMS  (객체관계형, 사용자 정의 타입 정의, 저장) 
+oracle, ibm db2 , postgresql, mysql, maria db, 
+2000년대 :   nosql 은 bigdata저장 (비정형과 반정형 데이터 저장 , Batch, DataMining, once write many read 목적, 트랜잭션 처리 목적이 아님 )
+mongo db, redis, cassandra, big table, hbase, ...
+
+database 와 table 을 생성하기 전에 modeling
+개념 모델링 - 관리대상 entity 도출, entity의 관계 도출, 속성 도출
+논리 모델링 - 정규화 
+물리 모델링
+
+table : database의 물리적 data저장 기본 객체, 행과 열의 2차원 구조로 표현
+entity속성=attribute=column
+entity인스턴스 = record = row = tuple
+
+entity의 관계는 부모entity의 PK 또는 UK column 을  자식entity에서 참조키 컬럼(FK)
+
+sql (structured query language) :
+DML : 데이터 조회, 테이블에 데이터 추가, 수정, 삭제
+DDL : 객체를 생성, 변경, 삭제
+DCL : 권한을 통해서 객체, 데이터에 대한 access, 실행 제어
+TCL : 트랜잭션의 일관성과 무결성 보장
+
+오라클에서는 select ~from ~ 절이 필수 절입니다.
+mysql, ms sql server의 경우 select~필수 절입니다.
+
+검색 종류 :
+Projection : 1 target table로부터 column기준으로 검색 (select ~ from ~)
+selection : 1 target table로부터 row기준으로 검색 (select ~ from ~where ~)
+where 조건  => 필터 조건
+join : 2개 이상의 table로부터 동일 속성의 컬럼값이 일치할 때 record를 결합 , 검색
+
+
+select   * | [distinct  ] column, column,....  | 표현식   [as Alias]
+
+표현식에 사용되는 연산자 :
+number 컬럼들간에  산술연산자 (+,-,*,/)
+모든 컬럼에 대해서 결합 연산자 || 은 문자열로 변환
+date컬럼의 연산은  +n, -n, +n/24, -n/24, +n/1440, -n/1440, date-date
+
+alter session set nls_date_format= 'YYYY/MM/DD HH24:MI:SS';
+
+null :  아직 할당되지 않은 값 의미
+        0과 " "과 다름
+        산술연산, 비교연산, 논리연산 모두 null리턴
+
+connect, describe명령어  (conn, desc)
+
+
+
+where 조건에 사용되는 연산자  :
+비교연산자 :   <, >=, <, <=, !=, <>, ^=
+논리연산자 : not , and, or
+범위 연산자 :  [not ]  between 하한값 and 상한값
+in list 연산자  :  [not]   in (값, 값, 값,...)
+character pattern matching  :    like , %, _ ,
+null 비교 연산자 :   is null,  is not null
+
+select   'A'   from dual;
+dual 테이블은 단순 연산 결과 반환 받고자 할때, sysdate, user 함수의 결과를 반환 받고자 할때, from 절에 사용하는 테이블
+select tname from tab;
+select sysdate from dual;
+dual은 SYS 소유의 테이블인데...public으로 select 권한을 받음
+desc dual
+select * from dual;
+
+select 10+10 from dual;
+
+select  '''A''' from dual;
+select q'[ 'A' ]' from dual;
+select q'# 'A' #' from dual;
+
+
+create table test (name  varchar2(10));
+insert into test values ('ABCDE');
+insert into test values ('A___E');
+insert into test values ('A%%%E');
+select * from test;
+
+Q>%가 포함된 이름 검색
+select * from test 
+where name like '%\%%' escape '\';
+Q>_가 포함된 이름 검색
+select * from test 
+where name like '%#_%' escape '#';
+
+workshop############################################################
+class Array :
+    def __init__(self):
+        self.list2d = [[0, 0, 0, 0],[0, 0, 0, 0],[0, 0, 0, 0]]
+        #self.2dlist = None
+    
+    def makeListData(self):
+        import random 
+        for row in range(3):
+            for col in range(4):
+                self.list2d[row][col] = random.randint(1, 12)
+        
+    def printList(self):
+         for row in range(3):
+            for col in range(4):
+                print(self.list2d[row][col], end=" ")
+            print()
+         
+        
+    def findMatchNumber(self, compare):
+        print("##일치하는 숫자:",  end=" ")
+        cnt = 0
+        for row in range(3):
+            for col in range(4):
+                if self.list2d[row][col] ==  compare.list2d[row][col] :
+                    cnt +=1
+                    print("[", row, "]", "[", col, "]", "=", self.list2d[row][col] ,  end=",  ")
+        print()
+        print("일치하는 숫자 개수 :", cnt)          
+                    
+       
+
+
+
+array1 = Array()
+print("## 첫번째 Array 출력 ")
+array1.makeListData()
+array1.printList()
+array2 = Array()
+array2.makeListData()
+print("## 두번째 Array 출력 ")
+array2.printList()
+array1.findMatchNumber(array2)
+
+
+sqldeveloper(오류-3)###############################################
+연산자 우선순위 :
+1. 산술연산자
+2. 연결연산자 ||
+3. 비교연산자
+4. is null, like, in , is not null, not like, not in
+5. [not] between 하한값 and 상한값
+6. not
+7. and
+8. or
+--우선 순위에 대한 규칙은 괄호를 사용해서 조절가능
+Q>급여가 1500 이상인 사원중 업무가  PRESIDENT 이거나  SALESMAN 인 사원번호, 이름, 업무, 급여를 출력하여라
+SELECT empno, ename, job, sal 
+FROM emp 
+WHERE   sal > 1500 AND job = 'PRESIDENT' OR  job = 'SALESMAN'  ; ---X
+
+SELECT empno, ename, job, sal 
+FROM emp 
+WHERE   sal > 1500 AND (job = 'PRESIDENT' OR  job = 'SALESMAN')  ; 
+
+table 종류 : 
+heap 테이블 - insert한 순서로 데이터가  block의 빈 공간에 저장됨
+partition 테이블 - 대용량 데이터의 검색 성능 향상을 위해 사용하는 테이블
+IOT테이블
+external 테이블 (read only용, stream  통해 서비스)
+
+select 
+from 
+[where 조건]
+[order by 컬럼 정렬방식, 컬럼 정렬방식, ..]
+* 정렬방식을 생략하면 asc(오름차순)으로 정렬됨
+  desc (내림차순)
+
+Q>EMP 테이블에서 입사일자가 빠른 사원이 먼저 나오도록 정렬하여 사원번호, 이름, 업무, 급여, 입사일자, 부서번호를 조회한다
+SELECT empno, ename, job, sal, hiredate, deptno
+FROM emp
+ORDER BY to_date(hiredate) ;
+
+SELECT empno, ename, job, sal, hiredate, deptno
+FROM emp
+ORDER BY  to_date(hiredate) desc ;
+
+Q>EMP 테이블에서 부서번호로 오름차순 정렬한 후 부서번호가 같을 경우 급여가 많은 순으로 정렬하여 사원번호, 성명, 업무, 부서번호, 급여를 출력하여라.
+SELECT empno, ename, job, deptno, sal
+ FROM EMP
+ORDER BY  deptno, sal DESC;
+
+
+Quiz>  SELECT ename, sal, sal*12 "Annual Salary"
+           FROM EMP
+          ORDER BY  sal*12  desc;  ---표현식 가능?  O
+
+
+Quiz> SELECT ename, sal, sal*12 "Annual Salary"
+           FROM EMP
+          ORDER BY  "Annual Salary"  desc;  ---Alias 가능?   O
+
+
+
+
+Quiz> SELECT ename, sal, sal*12 "Annual Salary"
+           FROM EMP
+          ORDER BY  3 desc;  ---columm position가능?   O
+
+
+
+sql언어 특성 : 선언적 언어
+                   결과지향적 언어
+                   예외 처리 못함
+                   변수  사용  제한 (mysql, ms sql server 사용 가능)
+                   명시적으로 if조건처리, for반복 처리 어려움 (조건은 함수로 처리, 행단위로 연산, 함수 적용이 반복 처리)
+
+sql 함수 : sql을 이용한 데이터 처리를 더 강력하게 해줌
+             반드시 1개의 값을 리턴함
+             데이터의 복잡한 계산 수행
+             컬럼값 변환
+             format 형식 변환
+             select절, where절, order by절에 사용 가능
+            중첩 사용 가능
+     
+
+custom function(plsql 문법)
+predefined function ---single row function(단일행 함수), multiple row function(복수행 함수, 그룹 함수), window function, ....
+
+
+single row function(단일행 함수)  : 
+character function : 함수('문자열',...)
+
+number function,
+date function,
+conversion function,
+general function
+
+select lower('Hello World'), upper('Hello World') , initcap('hello world')
+from dual;
+
+select length('korea'), length('대한민국'), lengthb('korea'), lengthb('대한민국')
+from dual;
+
+select concat(ename , concat(' works as a', job))
+from emp;
+
+# SUBSTR(char, position, length) : 문자열의 일부분을 떼어내는 기능을 하는 함수
+select substr('Hello World' , 7) , substr('Hello World' , 2, 4)
+       , substr('Hello World' , -5)
+from dual;
+
+
+#INSTR(string, search_string, position, occurrence) :  대상 문자열을 찾아 그 위치를 반환하는 함수
+Q>EMP 테이블에서 이름 중 'L'자의 위치를 조회한다.
+SELECT ename, instr(ename, 'L') ,   instr(ename, 'L', 1, 2),   instr(ename, 'L', 4, 1)
+FROM EMP;
+
+
+Q>  EMP 테이블에서 이름의 첫글자가 'K‘ 보다 크고 'Y‘ 보다 작은 사원의 사원번호, 이름, 업무, 급여, 부서번호를 조회한다. 결과는 이름순으로 정렬하여라.
+SELECT empno, ename, job, sal, deptno
+FROM emp
+WHERE SUBSTR(ename, 1, 1) > 'K' AND SUBSTR(ename, 1, 1) < 'Y'
+ORDER BY ename;
+
+#LPAD(expr1, n, [expr2]) : expr1을 n 자리만큼 문자열 길이로 만들어 반환하는 함수
+# RPAD(expr1, n, [expr2])
+
+select sal, lpad(sal, 10, '$'), rpad(sal, 10, '$')
+from emp
+
+# LTRIM(char [,set]) : 파라미터인 char 에서 set으로 지정된 문자를 가장 왼쪽 끝에서 제거한 결과를 반환
+# RTRIM(char [,set]) 
+select ltrim('Hello World', 'H') , ltrim('Hello World', 'e') 
+       , rtrim('Hello World', 'd') , rtrim('Hello World', 'l') 
+from dual;
+
+# TRIM([LEADING,TRAILING,BOTH] [,trim_char][FROM] trim_source)
+
+select length('   he  llo   '), trim('   he  llo   '), length(trim('   he  llo   '))
+from dual;
+
+# TRANSLATE(expr, from_string, to_string) : 문자열 하나를 일대일로 변환하는 작업을 수행
+# REPLACE(char, search_string, replace_string)  : char 문자열에서 search_string 값으로 들어온 문자를 replace_string값으로 대체하여
+이 결과를 반환
+
+select replace('JACK and JUE', 'J', 'BL') 
+from dual
+
+SELECT TRANSLATE('SQL*Plus', ' *SQL', '_s3#') 
+FROM DUAL;
+
+
+SELECT CHR(67)||CHR(65)||CHR(84) "Dog"
+  FROM DUAL;
+
+Q>EMP 테이블에서 20번 부서의 사원에 대하여 담당 업무 중 좌측에 'A'를 삭제하고 급여 중 좌측의 1을 삭제하여 출력하여라.
+SELECT ename, job, LTRIM(job, 'A'), sal, LTRIM(sal, 1)
+FROM emp
+ WHERE deptno =20 ;
+
+Q> EMP 테이블에서 10번 부서의 사원에 대하여 담당 업무 중 우측에 'T'를 삭제하고 급여 중 우측의 0을 삭제하여 출력하여라
+SELECT ename, job, rtrim(job, 'T'), sal, rtrim(sal, 0)
+FROM emp
+WHERE deptno = 10;
+
+Q> REPACE함수를 사용하여 사원이름에 SC문자열을 *?로 변경해서 조회하라
+SELECT ename,REPLACE(ENAME,'SC','*?') 변경결과
+FROM emp
+WHERE deptno = 20;
+Q> TRANSLATE함수를 사용하여 사원이름에 SC문자열을 *?로 변경해서 조회하라
+SELECT ename,TRANSLATE (ENAME,'SC','*?') 변경결과2
+FROM emp
+WHERE deptno = 20;
+
+SELECT TRIM ( LEADING 'A' FROM 'AABDCADD') 결과1 ,
+         TRIM ( 'A' FROM 'AABDCADD') 결과2,
+         TRIM ( TRAILING 'D' FROM 'AABDCADD') 결과3
+FROM DUAL ;
+
+#ROUND(n, [m])  반올림
+#TRUNC(n, [m])  버림
+#SIGN(n)  n이 0보다 클 경우 1, 0보다 작을 경우 -1, 0 일 경우 0을 반환한다.
+#POWER(n1, n2)  n1의 n2 제곱값을 구하는 함수
+#MOD(N1, N2)  N1 을 N2로 나누어 남은 값을 반환
+
+SELECT round(4567.678 ) 결과1, round(4567.678, 0) 결과2,
+ round(4567.678, 2) 결과3, round(4567.678, -2) 결과4
+FROM dual;
+
+SELECT trunc(4567.678) 결과1, trunc(4567.678, 0) 결과2,
+ trunc(4567.678, 2) 결과3, trunc(4567.678, -2) 결과4
+FROM dual;
+
+SELECT POWER( 2, 10) 결과1, 
+          CEIL (3.7) 결과2, 
+          FLOOR (3.7) 결과3
+ FROM dual;
+
+Q> EMP 테이블에서 급여를 30으로 나눈 나머지를 구하여 출력하여라.
+SELECT sal, mod(sal, 30)
+FROM EMP
+
+Q>EMP 테이블에서 사번이 홀수인 사원 정보 출력하여라.
+SELECT empno, ename, sal
+FROM EMP
+WHERE mod(empno, 2) = 1;
+
+SELECT ename, sal, sign (sal-3000)
+FROM emp
+ WHERE deptno = 20;
+
+################################################################################
+ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS';
+
+#date
+#timestamp = date+10억 1초 단위까지 표현 및 저장
+#timestamp with timezone (+9:00)
+#interval year to month 기간
+#interval day to second (timestamp) 기간
+
+# SYSDATE : 데이터베이스 서버의 현재 날짜 및 시간을 반환하는 날짜 함수
+# SYSTIMESTAMP :  데이터베이스 서버의 현재 날짜와 시간을 TIMESTAMP WITH TIME ZONE 데이터 유형의 값으로 반환
+# current_date :  session의 timezone기반으로 현재 날짜 및 시간을 반환하는 날짜 함수
+# current_timestamp : :  session의 timezone기반으로 현재 날짜와 시간을 TIMESTAMP WITH TIME ZONE 데이터 유형의 값으로 반환
+
+select SYSDATE, SYSTIMESTAMP, current_date, current_timestamp
+        , sessiontimezone
+from dual;
+
+alter session set time_zone='+3:00';
+select SYSDATE, SYSTIMESTAMP, current_date, current_timestamp
+        , sessiontimezone
+from dual;
+
+Q>EMP 테이블에서 현재까지의 근무일수가 몇 주 몇 일인가를 조회한다.
+SELECT ename, hiredate, sysdate,
+          sysdate-hiredate "Totoal Days",
+          trunc((sysdate-hiredate) / 7, 0) Weeks,   
+          round(mod((sysdate-hiredate), 7), 0) DAYS
+ FROM emp;
+
+#EXTRACT :  datetime 필드를 이용해서 년도, 월, 일, 시, 분, 초를 추출해서 numeric값으로 반환
+EXTRACT ( [YEAR] [MONTH][DAY] [HOUR]
+ [MINUTE][SECOND]
+ [TIMEZONE_HOUR] [TIMEZONE_MINUTE]
+ [TIMEZONE_REGION] [TIMEZONE_ABBR]  FROM  [datetime_value_expression | interval_value_expression] 
+
+SELECT extract ( day from sysdate) 일자, 
+          extract ( month from sysdate) 월,
+          extract ( year from sysdate) 년도
+ FROM dual ;
+
+
+SELECT extract (TIMEZONE_REGION from SYSTIMESTAMP),
+           extract (TIMEZONE_ABBR from SYSTIMESTAMP),
+           to_char(SYSTIMESTAMP, 'HH24')  --문자열로 반환
+ FROM DUAL
+
+#MONTHS_BETWEEN(date1, date2) : 두 날짜 사이의 개월 수 반환
+#ADD_MONTHS(date, integer) :  날짜에 개월 수를 더한 뒤 그 결과를 반환
+#NEXT_DAY(date, char) : 지정한 date 이후의 날짜 중에서 char로 명시된 요일에 해당되는 첫 번째 일자를 반환
+#ROUND(date, fmt)
+#TRUNC(date, fmt) 
+
+#날짜 관련 fmt(format text)는 YEAR, YYYY, YYY, YY, Y , Q, MONTH, MON, MM, DD, HH, MI, SS
+
+Q> EMP 테이블에서 10번 부서 사원의 현재까지의 근무 월수를 계산하여 조회한다
+SELECT ename, hiredate, sysdate,
+          months_between(sysdate, hiredate) m_between  ,
+          trunc(months_between(sysdate, hiredate), 0) t_between
+ FROM emp
+ WHERE deptno = 10
+
+Q> EMP 테이블에서 입사 일자로부터 5개월이 지난 후 날짜를 계산하여 출력하여라
+SELECT ename, hiredate, add_months(hiredate, 5) a_month
+FROM emp
+
+Q> EMP 테이블에서 입사 일자로부터 돌아오는 금요일, 토요일을 계산하여 조회
+SELECT ename, hiredate, next_day(hiredate, '금') n_6,
+next_day(hiredate, '토') n_7
+FROM emp;
+
+SELECT ename, hiredate, next_day(hiredate, 6) n_6,
+next_day(hiredate, 7) n_7
+FROM emp
+
+select  round(to_date('22/7/16'), 'MONTH')
+         , round(to_date('22/7/15'), 'MONTH')
+         , round(to_date('22/7/16'), 'YEAR') 
+           round(to_date('22/6/15'), 'YEAR')
+from dual;
+
+select  trunc(to_date('22/7/16'), 'MONTH')
+         , trunc(to_date('22/7/15'), 'MONTH')
+         , trunc(to_date('22/7/16'), 'YEAR') 
+           trunc(to_date('22/6/15'), 'YEAR')
+from dual;
+
+conversion 함수 ###############################
+to_xxxx
+자동 형변환 : 변환함수 사용없이 DB 서버가 형변환 처리
+select 10||10 from dual; ---?
+select '10'+'10' from dual; ---?
+
+명시적 형변환
+select sal, to_char(sal, '$999,999.00') from emp;  #arg1, arg2 형식이 일치하지 않아도 변환됨
+select hiredate, to_char(hiredate, 'YYYY"년" MM"월" DD"일"') from emp;
+
+select to_number('$12,345.50', '99,999.00') from dual;    --error
+select to_number('$12,345.50', '$99,999.00') from dual; 
+
+select to_date('2022년 1월 3일', 'YYYY-MM-DD') from dual; --error
+select to_date('2022년 1월 3일', 'YYYY"년" MM"월" DD"일"') from dual;
+
+Q>오늘날짜가 1년 중 몇번째 주인지 조회한다.
+SELECT    TO_CHAR(sysdate,  'WW')  
+FROM dual;
+
+SELECT sysdate,  sysdate + to_dsinterval('003 11:25:33') as “결과"
+FROM dual;
+
+
+날짜와 문자 데이터는  ' ' 감싸줘서 표현
+alias에서 대소문자 구별하거나 공백 포함하고 싶은 경우  "alias"
+변환함수에 fmt string에 유효하지 않는 문자를 포함하려면 ' yyyy "of" month'
+
+Q>사원의 이름, 입사일, 입사일자, 입사일에서 1년 6개월 후의 날짜를 조회하라
+TO_YMINTERVAL (), add_months()
+TO_YMINTERVAL ('01-06')
+
+SELECT empno, ename, hiredate ,  hiredate +TO_YMINTERVAL ('01-06') AS date2
+ FROM EMP;
+
+
+
+
+
+
+
+
+CONN  SYS/oracle  AS SYSDBA
+alter USER c##hr
+DEFAULT  TABLESPACE USERS;
+GRANT CONNECT, RESOURCE TO c##hr;
+CONN c##hr/oracle
+
+
+
+
