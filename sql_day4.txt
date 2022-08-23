@@ -1,0 +1,511 @@
+workshop과 sql 연습문제 질문? 
+단일행 함수중 null처리 함수 : 
+nvl(arg1, arg2) 
+nullif (arg1, arg2) 
+coalesce(arg1, arg2,...arg255)
+nvl2(arg1, arg2, arg3) 
+
+조건처리 함수, 표준 표현식 :
+decode( 컬럼|표현식, 비교값1, 리턴값1, 비교값2, 리턴값2, ........., 리턴값last) : =비교방식
+case 컬럼|표현식  when 비교값1   then 리턴값1 
+                       [when 비교값2   then 리턴값2  
+                        ......
+                        else 리턴값last ]  end
+
+case when 비교조건1  then 리턴값1 
+                       [when 비교조건2   then 리턴값2  
+                        ......
+                        else 리턴값last ]  end
+
+
+그룹함수 :  avg, max, min, sum, stddev, variance, count
+그룹함수는 전체 record가 인수로 전달되거나, 그룹핑된 레코드가 인수로 전달, 1개의 값을 리턴
+null포함된 인수들을 전달받은 경우 함수는 무시합니다
+
+Quiz> select   count (comm), avg(comm), sum(comm), min(comm), max(comm)  ---3
+from emp                   ---1
+where comm is null;    ---2
+
+
+그룹함수는 group by절과 함께 사용할 경우,  
+select 절에 그룹함수를 적용하지 않은 컬럼이 존재할 경우,  group by절에 반드시 선언해줘야 합니다. (필수)
+group by절에 선언된 컬럼은 select 절에 선언할수도 있고, 선언하지 않을수도 있습니다.(선택적)
+group by절에 표현식, alias, column position 사용가능하지 않습니다.
+
+그룹함수를 사용해서 조건을 선언할때 having절을 사용합니다.
+
+select	  .....	--5
+from                 	--1
+[where 	]	--2 필터조건	
+[group by ]	--3	
+[having	]	--4
+[order by	]	--6
+
+join ########################################################################
+2개 이상의 테이블로부터 공통속성값이 일치할때 레코드를 결합, 결과집합 생성 
+equi join ( inner join)  : parent.pk = child.fk 가 조인조건으로 사용됨
+select a.empno, a.ename,  a.deptno, b.dname
+from emp a inner join dept b on a.deptno = b.deptno;
+
+non equi join : 동일속성, 동일 컬럼명, 동일속성값이 존재하지 않는 경우,  
+from table1  join table2  on table1.column1 = table2.column2
+
+self join : 하나의 테이블의 레코드가 동일 테이블의 다른 레코드와 조인  (table1.pk = table1.fk 조인조건 선언)
+             자기 참조관계가 있는 테이블만 가능
+from table1  a join table1  b on (a.pk_column = b.fk_column)
+
+조인조건 컬럼의 한쪽이 null인 경우, 조인 결과집합에 포함되지 못하므로, 
+조인조건 컬럼의 한쪽이 null인 레코드를 결과집합에 포함하기 위해 outer join을 수행
+where절에 조인 조건을 선언하는 경우 조인할 레코드가 없는 테이블의 조인조건에 (+)를 선언합니다.
+sql 1999표준 문법에서는 결과집합에 포함할 레코드가 존재하는 테이블을 기준테이블로 left outer join, right outer join, full outer join
+
+n개의 테이블을 조인할 때 최소 조인조건은 n-1
+sql 1999표준 문법 :    from table1  join table2  on table1.column1 = table2.column2 
+                                     join table3  on table1.column1 = table3.column3
+
+
+집합연산자  #####################################
+두개이상의 result set 을 단일 결과집합(result set)으로 생성
+집합연산자를 사용하는 select 문은 반드시 컬럼개수와 타입순서 일치해야 합니다.
+집합연산자를 사용하는 select 문들에서 order by절은 마지막 select문에서만 선언 가능합니다.
+union all : append, 합집합, 중복레코드 제외시키지 않음
+union : 각 select의 첫번째 column으로 정렬, 비교, 중복레코드 제외, 합집합 생성 (cost가 비싼 연산 수행)
+intersect : 각 select의 첫번째 column으로 정렬, 비교, 중복레코드만 교집합으로 생성  (cost가 비싼 연산 수행)
+minus : 각 select의 첫번째 column으로 정렬, 비교, 중복레코드 제외, 차집합 생성 (cost가 비싼 연산 수행)
+
+Q> 전체 사원들의 급여 평균과
+     부서별 사원들의 급여 평균과 
+     부서와 직무별 그룹핑한 사원들의 급여 평균을 단일 결과 집합으로 출력
+(3개의 select 문을 집합연산자를 사용하여 단일 결과 집합 생성)
+select to_number(null), ' ',  avg(sal)
+from emp 
+union all
+select deptno, ' ',  avg(sal)
+from emp 
+group by deptno 
+union all
+select deptno, job, avg(sal)
+from emp 
+group by deptno , job ;  -->동일한 테이블을 3번 읽음
+
+
+select deptno, job, avg(sal)
+from emp
+group by rollup (deptno, job) ;  --테이블을 1번 읽어서 위와 동일 결과 집합 생성
+
+
+group by rolllup (A, B)
+-> group by (A, B)
+-> group by (A)
+-> group by ()
+
+
+group by rolllup (A, B, C)
+-> group by (A, B, C)
+-> group by (A, B)
+-> group by (A)
+-> group by ()
+
+select deptno, job, avg(sal), grouping(deptno), grouping(job)
+from emp
+group by rollup (deptno, job) ; 
+
+
+Q> 전체 사원들의 급여 평균과
+     부서별 사원들의 급여 평균과 
+     직무별 사원들의 평균급여와
+     부서와 직무별 그룹핑한 사원들의 급여 평균을 단일 결과 집합으로 출력
+(4개의 select 문을 집합연산자를 사용하여 단일 결과 집합 생성)
+
+select to_number(null), ' ',  avg(sal)
+from emp 
+union all
+select deptno, ' ',  avg(sal)
+from emp 
+group by deptno 
+union all
+select to_number(null), job, avg(sal)
+from emp 
+group by job 
+union all
+select deptno, job, avg(sal)
+from emp 
+group by deptno , job ;    ---동일 테이블을 4번 access 비효율
+
+
+select deptno, job, avg(sal)
+from emp
+group by cube (deptno, job) ; 
+
+
+group by cube (A, B)
+-> group by (A, B)
+-> group by (A)
+-> group by (B)
+-> group by ()
+
+group by cube (A, B, C)
+-> group by (A, B, C)
+-> group by (A, B)
+-> group by (A, C)
+-> group by (B, C)
+-> group by (A)
+-> group by (B)
+-> group by (C)
+-> group by ()
+
+# ROLLUP 연산자는 보고서를 작성할 때 집합에서 통계 및 요약정보를 추출하는데 사용
+#ROLLUP 연산자는  grouping columns의 수를 N이라고 했을 때 N+1 level의 subtotal 생성
+# cube 연산자는 인수들에 대한 계층별 집계를 구할 수 있으며, group by절에 N개의 열이 있을 경우 집계 조합수는 2의 N승개이다.
+# cube는 cross tabulation 결과 집합을 산출하는데 사용된다
+
+
+Q>전체 사원의 평균급여와
+부서와 직무별 사원들의 평균급여,
+관리자와 직무별 사원들이 평균급여를 하나의 결과집합으로 출력하시오
+
+--grouping sets 는  GROUP BY 절의 확장기능으로 데이터를 여러 개로 그룹화 하도록 지정할 수 있다
+group by sql문장을 여러 번 반복하지 않아도 원하는 결과를 쉽게 얻을 수 있다
+rollup과 는 달리 평등한 관계이므로 인수의 순서가 바뀌어도 결과는 같다
+select deptno, job, mgr, avg(sal)
+from emp
+group by grouping sets ((deptno, job), (mgr, job), ());
+
+
+select deptno, job,   avg(sal)
+from emp
+group by deptno, job
+union all
+select mgr, job,   avg(sal)
+from emp
+group by mgr, job
+union all
+select to_number(null),to_char(null),   avg(sal)
+from emp;   
+
+subquery################################################## 
+select ~문 = query문
+subquery : 하나의 SQL문안에 포함되는 또 다른 SQL문
+
+select ~          	--main query, outer query       
+from 
+where  컬럼 연산자   (select ~              ---subquery, nested query, inner query
+                              from  ~              --먼저 1번 수행
+                              where  ~) ;
+
+select절, from절, where절,  having절, order by절에 subquery 선언 및 사용 가능
+insert의 values절 , insert into절, update의 where절, update set절,   delete의 where절에 subquery 선언 및 사용 가능
+
+
+subquery의 종류 :
+# single row subquery :  subquery의 결과 레코드가 1개
+    |---scalar subquery :  subquery의 결과가 단일값 (1개의 레코드에서 1개의 컬럼)
+
+#multiple row subquery :  subquery의 결과 레코드가 n개
+    |---multiple column subquery
+
+# inline  view - select의  from절의 subquery
+
+# corelated subquery - nested subquery에서 main query의 컬럼값을 참조해서 수행하는 query,  main query의 후보행수만큼 subquery가 반복적으로 수행됨 =>성능문제, join이 더 유리한 경우가 있음
+
+single row subquery는 single row operator와 함께 사용 : >, >=, =, <, <=, <>
+multiple row subquery는 multiple row operator 와 함께 사용 : any, all, in
+
+Q> 7566번 사원보다 급여를 많이 받는 사원의 이름, 급여를 조회하라. 
+--조건값을 몰라서 query를 2번 이상 수행해야 하는 경우 , 먼저 수행해야 하는 query를 subquery로 선언하고, 
+subquery의 결과를 받아서 수행해야 하는 query를 main query로 선언합니다.
+select  ename,sal    	 
+from  EMP
+where  sal >   (select   sal         
+                     from  EMP            
+                     where  empno=7566) ;
+
+Q>EMP 테이블에서 사원번호가 7521인 사원과 업무가 같고 급여가 7934인 사원보다 많은 사원의 사원번호, 이름, 담당업무, 입사일자, 급여를 조회하라
+--where절에 조건 각각  subquery 선언 가능
+SELECT empno, ename, job, hiredate, sal
+FROM emp
+WHERE job = (SELECT job FROM emp
+	      WHERE empno = 7521)
+ AND sal > (SELECT sal FROM emp
+ 	   WHERE empno = 7934);
+
+Q> EMP 테이블에서 급여를 제일 많이 받는 사원의 이름, 부서번호, 급여, 입사일을 조회하라  
+--subquery에 그룹함수 사용 가능
+SELECT ename,deptno,sal, hiredate
+FROM emp
+WHERE sal = ( SELECT MAX(sal) FROM emp);
+
+
+Q> EMP 테이블에서 급여의 평균보다 적은 급여를 받는 사원의 사원번호, 이름, 담당업무, 급여, 부서번호를 출력하여라
+SELECT empno, ename, job, sal, deptno
+ FROM emp
+ WHERE sal <  (SELECT avg(sal)     FROM emp);
+ 
+Q> EMP 테이블에서 부서별 최소급여가  20번 부서의 최소 급여보다 높은 부서를 조회, 출력하여라 (부서번호와 최소급여)
+SELECT deptno, min(sal)
+FROM emp
+GROUP BY deptno
+HAVING min(sal) >  (SELECT min(sal) 
+		 FROM emp
+	               WHERE deptno = 20);
+
+Q> 각 부서별 최고 급여를 받는 사원의 사원번호, 이름, 급여,부서번호를 조회, 출력하여라
+SELECT empno ,ename ,sal, deptno
+ FROM emp
+ WHERE sal   in  ( SELECT MAX(sal)
+ 	          FROM emp
+	          GROUP BY deptno);  ---multiple row subquery
+
+update emp set deptno=10 , sal = 3000
+where empno =7000;
+commit;
+
+SELECT empno ,ename ,sal, deptno
+ FROM emp
+ WHERE  (deptno, sal)   in  ( SELECT  deptno, MAX(sal)
+                                      FROM emp
+	                       GROUP BY deptno);  ---multiple column subquery, pair-wise 비교, 
+
+
+SELECT empno ,ename ,sal, deptno
+ FROM emp
+ WHERE  deptno   in  ( SELECT  deptno 
+                                      FROM emp
+	                       GROUP BY deptno)
+and sal in  ( SELECT MAX(sal)
+ 	          FROM emp
+	          GROUP BY deptno);  --- non-pair wise 비교
+
+Q> 직무가 salesman이 아닌 사원 중에서 업무가 SALESMAN인 최소 한 명 이상의 사원보다 급여를 많이 받는 사원의 이름, 급여, 업무를 조회하라 
+SELECT ename, sal ,job
+ FROM emp
+ WHERE job != 'SALESMAN'
+ AND sal >ANY  (SELECT sal FROM emp
+ 	        WHERE job='SALESMAN');
+
+
+Q> 직무가 salesman이 아닌 사원 중에서 업무가 SALESMAN인 모든 사원의 급여보다 급여를 많이 받는 사원의 이름, 급여, 업무를 조회하라 
+SELECT ename, sal ,job
+ FROM emp
+ WHERE job != 'SALESMAN'
+ AND sal >ALL  (SELECT sal FROM emp
+ 	        WHERE job='SALESMAN');
+
+
+conn c##hr/oracle
+select last_name "Name", length(last_name) "Length"
+from employees
+where last_name like  '&lname%';  
+--&변수명은 치환변수로서 실행시에 값 입력을 요청함
+
+Q> FORD 또는  BLAKE 사원과 관리자 및 부서가 동일한 사원의 정보 조회 
+(단 , FORD, BLAKE 사원정보는 결과에서 제외)
+
+SELECT * 
+FROM EMP
+WHERE (mgr ,deptno) IN (SELECT mgr , deptno
+		        FROM EMP
+ 		        WHERE ename IN ('FORD', 'BLAKE')) 
+AND ename NOT IN ('FORD', 'BLAKE');  -- pair wise비교
+
+
+SELECT * 
+FROM EMP
+WHERE   mgr  IN (SELECT mgr 
+		        FROM EMP
+ 		        WHERE ename IN ('FORD', 'BLAKE')) 
+and deptno IN (SELECT deptno FROM EMP
+ 	          WHERE ename IN ('FORD', 'BLAKE')) 
+AND ename NOT IN ('FORD', 'BLAKE');  --non-pair wise비교
+
+Co-related subquery : 상관관계 subquery #############################
+select column1, column2, ...
+from table  main
+where column1 operator ( select colum1
+                                   from table2 sub
+		         where sub1.expression1 = main.expression1)
+1. 후보 행을  가져온다(메인쿼리에서 인출한다)
+2.  후보 행의 값을 사용하여 서브쿼리를 실행한다
+3.  서브쿼리의 결과값을 사용하여 메인 쿼리의 후보 행의 조건을 확인한다 (조건을 만족하면 결과집합으로 생성)
+4.  메인 쿼리의 후보 행이 남지 않을 때까지 반복한다
+※ 실행계획을 확인해서 조인이 더 유리하면 조인으로 실행시키고, Co-related subquery 실행 성능이 더 유리하면 Co-related subquery로 구문 작성 , 실행합니다.
+
+문>소속 부서의 평균 급여보다 많은 급여를 받는 사원의 이름, 급여, 부서번호, 입사일, 업무 정보를 조회하는 SQL 문이다. (Co-related subquery와 join)
+--힌트 : 후보행의 부서번호를 조건으로 서브쿼리에서는 부서의 평균 급여 리턴
+SELECT ename, sal, deptno, hiredate,job
+ FROM EMP E
+ WHERE sal  >  ( SELECT AVG(sal)
+                      FROM EMP
+                      WHERE deptno = E.deptno);
+
+SELECT e.ename, e.sal, e.deptno, e.hiredate, e.job
+FROM EMP E ,  (SELECT deptno ,  AVG(sal) avg_sal
+                      FROM EMP
+                      group by  deptno ) E2   --from절의 subquery는 inline view
+ WHERE e.sal > e2.avg_sal 
+and e.deptno = e2.deptno;
+
+ inline view는 SQL문이 실행될 때만 임시적으로 메모리에 생성되는 논리적 테이블( 동적인 뷰) 이기 때문에 데이터베이스에 해당 정보가 저장되지 않는다
+일반적인 뷰를 정적 뷰(Static View)라고 하고 인라인 뷰를 동적 뷰(Dynamic View)라고도 한다.
+
+conn c##hr/oracle
+Q> job_history, employees 로부터 
+     사원들중에서 부서 또는 직무를 2회이상 변경한 사원 조회
+     (사원번호, 현재 직무, 현재 부서번호)
+select employee_id, last_name, job_id, department_id
+from employees t1
+where 2<=  (select count(*)
+                from job_history
+                where t1.ememployee_id = employee_id)
+
+select employee_id, last_name, job_id, department_id
+from employees t1 ,  (select employee_id, count(*) cnt
+                             from job_history
+                             group by employee_id )  t2
+where t1.ememployee_id = t2.employee_id
+and t2.cnt >=2 ;
+
+Q> 전체 사원들의 급여를 내림차순으로 정렬하고 급여가 높은 사원 5명만 출력
+hint : from절에 정렬된 데이터 소스 집합 (inline view), rownum
+
+select rownum, empno, ename, deptno, sal
+from emp;
+
+select rownum, empno, ename, deptno, sal            ---2
+from emp                            -----1
+order by sal desc;                  ----3
+
+select  rownum no,  empno, ename, deptno, sal   
+from ( select  empno, ename, deptno, sal      
+        from emp                    
+        order by sal desc ) 
+where rownum < 6 ;     --Top_N 쿼리 
+
+--from 절의 subquery에서만 order by절을 쓸 수 있음
+
+12c버전부터 
+select
+from 
+[where]
+[group by]
+[having]
+[order by]
+[offset n rows]
+[fetch next  n | n  percent  rows only |with ties ]
+
+
+conn c##hr/oracle
+select last_name, salary
+from employees
+order by salary desc
+offset 10 rows                  --10 rows를 skip
+fetch next 10 rows only;     --11번째 행부터 ~20번째 행까지 가져옴
+
+
+select last_name, salary
+from employees
+order by salary desc
+fetch next 10 rows only;     --1번째 행부터 ~10번째 행까지 가져옴
+
+
+select last_name, salary
+from employees
+order by salary desc
+fetch next 10 rows with ties;   -- 마지막행과 동일한 컬럼값의 레코드를 추가로 결과집합에 포함함
+
+
+select last_name, salary
+from employees
+order by salary desc
+fetch first 10 percent rows only;  
+
+Scalar subquery : 하나의 행에서 하나의 열 값만 반환
+decode 또는 case의 조건, 표현식
+select절 
+insert의 values 절
+update문의 set절
+
+Q> 사원번호와 이름, 사원의 부서 위치가 DALLAS이면 TOP 출력하고 
+      부서 위치가 DALLAS가 아니면 BRENCH로 출력하시오
+
+select ename, empno, case when deptno = (select deptno from dept
+                                                          where loc = 'DALLAS')   then 'TOP'
+		            else 'BRENCH' end  as location
+from emp;
+
+select ename, empno,  decode (deptno , (select deptno from dept
+                                                          where loc = 'DALLAS'),  'TOP',  'BRENCH')  as location
+from emp;
+
+Q>사원이름, 부서번호, 급여, 소속부서의 평균연봉을 함께 출력 
+ SELECT ename, deptno, sal,  (SELECT AVG(sal) FROM EMP WHERE deptno = e.deptno) AS avgsal
+ FROM EMP e;   --select절에 corelated subquery, scalar subquery
+
+Q>사원이름, 부서번호, 급여, 소속부서를 부서이름으로 오름차순 정렬해서 출력
+SELECT empno, ename, deptno, hiredate , ( SELECT dname
+ 	    FROM DEPT
+ 	    WHERE deptno = e.deptno) 
+ FROM EMP e
+ ORDER BY  ( SELECT dname
+ 	    FROM DEPT
+ 	    WHERE deptno = e.deptno) desc ;
+
+
+correlated subquery에서 사용되는 연산자 : exists 
+main query에서 서브쿼리로 컬럼값을 전달하면 서브쿼리에서 전달받은 컬럼값을 가지는 레코드가 존재하는지 검사
+
+conn c##hr/oracle
+Q> 사원이 존재하는 부서의 부서번호, 부서명 조회
+select department_id, department_name
+from departments a
+where exists (select 'x'
+                  from employees
+                  where  a.department_id = department_id)
+
+
+select department_id, department_name
+from departments a
+where not exists (select 1
+                       from employees
+                       where  a.department_id = department_id)
+
+Q> emp테이블에서 관리자인 사원들만 조회
+select empno, ename
+from emp
+where empno in (select mgr
+                       from emp);  -->  empno = 7902 or empno=7698 or empo= 7839,7566,7782,7788, null
+
+select empno, ename
+from emp a
+where  EXISTS ( SELECT 1
+ 	         FROM emp
+                      where a.empno = mgr);
+
+
+Q> emp테이블에서 관리자가 아닌 일반(평) 사원들만 조회
+select empno, ename
+from emp
+where empno  not in (select mgr
+                       from emp);   ----? empno <> 7902 and empno <>7698 and 7839,7566,7782,7788, null
+--subquery의 결과집합에 null이 포함되어 있고 not in 연산자는 null에 대해 null을 리턴
+※ subquery의 결과집합에 null이 포함여부를 확인하고 연산자가 null을 비교못하면 조건을 추가하거나 다른 연산자를 사용해야 합니다.
+
+select empno, ename
+from emp
+where empno  not in (select mgr
+                             from emp
+                              where mgr is not null); 
+
+select empno, ename
+from emp a
+where not  EXISTS ( SELECT 1
+ 	         FROM emp
+                      where a.empno = mgr);
+
+
+select employee_id, last_name, salary
+from employees
+where salary > (select avg(salary)
+                     from employees)
+order by 3 ;
+
