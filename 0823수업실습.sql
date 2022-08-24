@@ -55,3 +55,29 @@ from emp
 where job != 'salesman'
 and sal> all(select sal from emp where job='salesman');
 
+
+select sysdate(sysdate, 'dd-mm-yy')
+from dual;
+
+SELECT extract ( day from sysdate) , 
+          extract ( month from sysdate) ,
+          extract ( year from sysdate) 
+ FROM dual ;
+
+문> ford 또는 blake  사원과 관리자 및 부서가 동일한 사원의 정보 조회
+
+select *
+from emp
+where(mgr, deptno) in (select mgr, deptno from emp where ename in ('ford','blake'))
+and ename not in ('ford','blake');
+
+select *
+from emp
+where mgr in (select mgr from emp where ename in ('ford','blake'))
+and deptno in (select deptno from emp where ename in ('ford','blake'))
+and ename not in ('ford','blake');
+
+select ename, sal
+from emp
+order by sal desc
+fetch next 2 rows with ties; ---마미
