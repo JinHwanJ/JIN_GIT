@@ -1,0 +1,194 @@
+Review
+Pandas
+1차 세미프로젝트 샘플 1~2개  , 4시에 프로젝트 팀 구성 , 잠시 팀 구성원간에 미팅
+5시~ 상담/ 연습문제 및 정리
+
+pandas  : 데이터 랭글링을 위한 최적화된 도구
+             서로 다른 여러 가지 소스(json, csv, xml, rdbms, txt, excel등)으로부터 데이터를 **공통의 포맷**으로 정리
+
+Series :  1차원 구조의 집합 객체,  index+data(value) 
+            벡터화 연산 지원,  데이터 구조 맞지 않으면  브로드캐스트  지원
+            value_counts()
+Dataframe :  각 열 단위(Series)가 모여 된 하나의 표 구조의 집합 객체  , index +column +value
+                  head(), tail(), info() ,  describe()
+                  .index ,  .columns ,  .values
+s= pd.Series([1,2,3]) # 리스트 또는 배열을 시리즈로 변환, 인덱스는 0,1,2...자동
+s= pd.Series(np.array([1,2,3]))
+s= pd.Series({'a':5, 'b':6}) # 딕셔너리를 시리즈로 변환, 인덱스는 a, b가 됨
+s= pd.Series([1,2,3], index=['a','b','c']) # 인덱스 설정가능            
+
+df= pd.DataFrame([2,3,4,5])  #df.shape  (4행 1열)
+df= pd.DataFrame([[2,3,4,5]])  #df.shape (1행 4열)
+df= pd.DataFrame(2, index=[1,2], columns=['갑','을'])  #df.shape  (2행 2열)
+
+행 인덱스 또는 열 인덱스 변경 : df.index=[새로운 행 인덱스 값 리스트]
+                                           df.columns= [새로운 열 인덱스 값 리스트]
+                                           df.rename(index={oldname:newname, ...}, inplace=True)
+                                            df.rename(columns={oldname:newname, ...}, inplace=True)
+
+
+import pandas as pd
+
+df = pd.DataFrame([[18, '남','김천고'], [19, '여', '울산고']],
+                 index=['진현', '민지'],
+                 columns=['나이', '성별', '학교'])
+print(df)
+print(id(df))
+df.rename(columns={'나이':'연령', '성별':'남녀', '학교':'소속'}, inplace=True)
+print(df)
+print(id(df))
+new_df = df.rename(index={'진현':'학생1', '민지':'학생2' })
+print(new_df)
+print(id(new_df))   #새로 생성된 Dataframe?
+print(df)
+
+
+drop() :  데이터프레임의 행 또는 열을 삭제
+df = pd.DataFrame([[18, '남','김천고'], [19, '여', '울산고']],
+                 index=['진현', '민지'],
+                 columns=['나이', '성별', '학교'])
+df.drop('진현', axis=0, inplace=True)  #  axis 기본값은 0이며,  행이 삭제 됩니다.  axis=1은 열이 삭제 됩니다.
+print(df)
+
+df = pd.DataFrame([[18, '남','김천고'], [19, '여', '울산고']],
+                 index=['진현', '민지'],
+                 columns=['나이', '성별', '학교'])
+df.drop('진현', axis=1, inplace=True)
+print(df)
+
+
+데이터프레임으로부터 열을 선택 :  df.열이름 , df['열이름'] =>Series 반환
+                                               df[['열이름']] => Dataframe객체 반환
+데이터프레임으로부터 행을 선택 :  인덱스기반 = > loc['행인덱스']  , loc['행인덱스 start'  : '행인덱스 end' ] 
+                                               정수형 위치 인덱스 => iloc[ 1 ]  , iloc[3: ],  iloc[[2, 5]] 
+데이터프레임으로부터 행,  열을 선택 :   df.loc[행, 열]
+                                                      df.iloc[행, 열]
+Q> DataFrame객체.iloc[ 시작인덱스 : 끝 인덱스 : 슬라이싱간격 ]  => 행 기준
+
+데이터프레임으로부터  특정 열을 index로 설정 :  DataFrame객체.set_index 
+데이터프레임으로부터  특정 열 값을 기준으로 정렬 :  DataFrame객체.sort_values ( by=)
+데이터프레임으로부터  행 인덱스 값으로 정렬 :  DataFrame객체.sort_index ( axis= , ascending=False)
+
+
+import numpy as np
+exam_data = {'이름': ['진현', '민지', '성철', '지산'], '수학':[100, 40, 70, 30], '영어': [50, 70, 90, 80], '생물': [50, 90, 70, 18], '도덕': [88, 68, 58, 77]}
+df = pd.DataFrame(exam_data)
+print(df)
+
+df['국어'] = 80  # 새로운 열 추가 
+print(df)
+
+df.loc[1] = ['하나', 1, 2, 3, 4, 5]    #? 행 위치 1의 데이터가 수정됨
+print(df)
+
+df.loc[4] = 100  #?  행 위치 4 , 새로운 행 추가 
+print(df)
+
+
+데이터프레임의 행과 열을 서로 맞바꾸는 방법 :  DataFrame객체.T, DataFrame객체.transpose()
+
+
+dict_data = {'c0':[1,2,3], 'c1':[4,5,6], 'c2':[7,8,9], 'c3':[10,11,12], 'c4':[13,14,15]}
+df = pd.DataFrame(dict_data, index=['r0', 'r1', 'r2'])
+print(df)
+
+# index를 재정의 
+new_index = ['r0', 'r1', 'r2', 'r3', 'r4']
+ndf = df.reindex(new_index)
+print(ndf)   #추가되는 부분은 행인덱스의 행 데이터는  NaN값이 된다.
+
+#추가되는 부분을 NaN이 아닌 0으로 채우려면 fill_value옵션을  사용
+new_index = ['r0', 'r1', 'r2', 'r3', 'r4']
+ndf2 = df.reindex(new_index, fill_value=0)
+print(ndf2)
+
+#행인덱스를 기본 정수 인덱스로 변환
+ndf = df.reset_index()
+print(ndf)
+
+#DataFrame객체.isnull()     => 결측치(nan) 데이터이면 True 반환, 
+#DataFrame객체.dropna(subset=['열이름'])              => 결측치(nan) 데이터를 삭제
+#DataFrame객체.fillna(채울값, inplace=)             => 결측치(nan) 데이터를 평균 또는 중앙값등으로 채울때 사용              
+
+##########################################################################################
+p53 연습문제
+import numpy as np
+import pandas as pd
+df_score1 = np.random.randint(50, 100, [5,3])
+df_score1 = pd.DataFrame(df_score1, columns=['국어', '영어', '수학'])
+df_score1.index = ['이몽룡', '춘향', '향단', '방자', '변사또']
+#print(df_score1)
+df_score2 = df_score1.reset_index() 
+df_score2.set_index('index')
+
+※ 오늘부터 빅데이터분석 기사 필기 시험 접수입니다.
+빨리 접수하면 시험볼 장소 선택이 수월해지며,
+
+import json
+
+with open('./datas/test.json') as f:
+    js = json.loads(f.read()) ## json 라이브러리 이용
+df1 = pd.DataFrame(js)
+print(df1)
+
+df2 = pd.read_json('./datas/test.json') ## pd.read_json 이용
+print(df2)
+
+#json데이터로 기록
+df1.to_json()
+df.to_json(orient='records')
+df.to_json(orient='index')   #columns(기본값), values, split
+
+
+# 파이썬 application에서 웹 사이트로 요청을 보내지만, 브라우저에서 보내는 것 처러럼 http header정보에 브라우저 이름을 보내면, 웹 서버는 브라우저에서 요청한것으로 인식함
+import json
+import urllib
+from urllib.request import Request, urlopen
+import pandas as pd
+import sys
+urlTicker = Request("http://api.nobelprize.org/v1/prize.json", headers={'User-Agent': 'Mozilla/5.0'})
+readTicker = urlopen(urlTicker).read()
+jsonTicker = json.loads(readTicker)
+
+
+
+p.59 연습문제
+df_score3 = np.random.randint(50, 100, [10,3])
+df_score3 = pd.DataFrame(df_score3, columns=['국어', '영어', '수학'] ,
+                                     index=[["A", "A", "A", "A", "A", "B", "B", "B", "B", "B"],  [i + 1 for i in range(5)]*2 ])
+
+df_score3.index.names=["반", "번호"]
+#print(df_score3)
+df_score3 = df_score3.reset_index()
+print(df_score3)
+
+df_score4 = stack(["반", "번호"])
+print(df_score4)
+
+df_score4["평균 "] = df_score4.mean(axis=1)
+print(df_score4)
+
+df_score5 = df_score3.set_index(["반", "번호"] ).unstack("반")
+print(df_score5)
+
+df_score5.loc[("AVG"), :] = df_score5.mean()
+print(df_score5)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
