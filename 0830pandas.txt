@@ -1,0 +1,500 @@
+# 빅데이터 분석기사 필기 접수 기간중입니다.
+
+csv파일 내용을 dataframe 반환 :
+pd.read_csv('경로/이름', header=None, names=['new 열이름', ...],  )
+names=[], header=0는 헤더 생략 
+usecols=[0, 2, 5] or (0, 2, 5) or ['열이름', ...]
+index_col = 특정 컬럼(열)을 행 인덱스로 설정
+nrows = n 가져올 행 개수 제한
+skiprows = 첫 n개행을 제외하고 가져올 때 사용 옵션
+skipfooter = 뒤에 n개행을 제외하고 가져올 때 사용 옵션
+
+excel 파일 내용을 dataframe 반환 : xlrd 라이브러리 사용
+pd.read_excel('경로/이름',  sheet_name = '시트명' )
+pd.read_excel('경로/이름',  sheet_name = 0 )
+header 옵션 - 열 이름(헤더)으로 사용할 행 지정
+첫 행이 헤더가 아닌 경우 header = None 
+names=[] 옵션 - 열 이름 변경
+usecols 옵션 - 불러올 열 지정
+na_values 옵션 - 결측값(NA / NaN)으로 인식 할 문자열 지정
+nrows = n 가져올 행 개수 제한
+skiprows = 첫 n개행을 제외하고 가져올 때 사용 옵션
+skipfooter = 뒤에 n개행을 제외하고 가져올 때 사용 옵션
+
+웹사이트에서 제공하는 json 데이터를 dataframe 생성 :
+1. Request객체(url) , urlopen() 로 요청
+2. 응답 데이터 read() : str 
+3. json.loads()  메모리에 json객체로 생성
+4. pd.Dataframe(json객체)
+
+
+웹사이트에서 제공하는 html 페이지 내용중에서 table 데이터를 dataframe 생성 : pd.read_html()
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from unicodedata import normalize
+
+table_MN = pd.read_html('https://en.wikipedia.org/wiki/Minnesota')
+print(f'Total tables: {len(table_MN)}')
+df = table_MN[0]
+print(df.head())
+print(df.info())
+
+
+table_MN = pd.read_html('https://en.wikipedia.org/wiki/Minnesota' , match='Election results from statewide races')
+print(len(table_MN))
+print(table_MN) 
+
+
+웹사이트에서 제공하는 json 데이터를 dataframe 생성 :
+1. Request객체(url) , urlopen() 로 요청
+2. 응답 데이터 read() : str 
+3. xml.etree.ElementTree 객체 생성
+4.  데이터 추출을 위해서 태그명으로 검색, 내용 추출 : find('태그명').text 
+5. 리스트에 dict객체로 추가 후    pd.Dataframe( )로 dataframe 객체로 생성
+
+read_table('경로/이름', sep='') 
+read_hdf()
+
+오라클 ordbms의 테이블로부터 데이터를 dataframe 객체로  생성 :
+1. 데이터를 가져올 ordbms 라이브러리(모듈) import
+2. 데이터를 가져올 ordbms connection : cx_Oracle.connect('user명', 'password', 'url(domain)/service') 
+3. Cursor객체 생성 - connection 객체.cursor()
+4. sql 실행 - cursor객체.execute()
+5. select 의 실행결과 resultset은 for문 이용해서 row단위로 추출
+
+
+행과 열에 다중 인덱스 정의 할 수 있음
+행의 다중 인덱스중 하나의 인덱스를 열 인덱스로 전환 : unstack
+열 다중 인덱스중 하나의 인덱스를 행 인덱스로 전환 : stack
+
+행과 열에 다중 인덱스 정의되어 있는 경우 , 하나의 열이나 행을 선택할때  loc[(상위인덱스, 하위인덱스) , (상위인덱스, 하위인덱스)]
+ 슬라이싱  :  대신  loc[(상위인덱스, slice(None) , (상위인덱스, 하위인덱스)]
+
+정의된 다중 인덱스의 상위 하위 인덱스를  교환 - Dataframe객체.swaplevel( , , axis=0)
+
+두개의 Dataframe객체의 교집합 :  merge(leftdf1, rightdf2, how='inner') 
+how옵션 값 : 합집합 outer (합집합시 컬럼의 없는 데이터는 NaN처리 된다.)
+                  left 
+                  right
+on옵션 : 컬럼 또는 특정 인덱스를 기준으로 결합
+left_on 옵션
+right_on 옵션
+right_index=True 옵션
+indicator ='컬럼명'
+
+df1 = pd.DataFrame({    '고객번호': [1001, 1002, 1003, 1004, 1005, 1006, 1007],
+                                '이름': ['둘리', '도우너', '또치', '길동', '희동', '마이콜', '영희']
+                                 }, columns=['고객번호', '이름'])
+print(df1)
+df2 = pd.DataFrame({     '고객번호': [1001, 1001, 1005, 1006, 1008, 1001],
+                                '금액': [10000, 20000, 15000, 5000, 100000, 30000]
+                                  }, columns=['고객번호', '금액'])
+print(df2)
+
+df_merge1 = pd.merge(df1, df2, how='outer',  indicator='indicator정보')  # both, left_only, right_only
+df_merge1
+
+ 
+판다스에 내장된 그래프 도구 :
+df.plot(kine='그래프종류')
+line
+bar
+barh
+his
+box
+kde - 커널밀도
+area -면적
+pie
+scatter -산점도
+hexbin-고밀도 산점도
+
+concat([df1, df2], axis=0) : 행단위로 이어붙이기 (중복된 데이터는 삭제되지 않음)
+ignore_index = True옵션은 index 번호를 초기화
+
+concat([df1, df2], axis=1) : 열단위로 이어붙이기
+join 옵션 - 교집합 'inner' , 합집합 'outer'
+
+DataFrame객체에 Series객체를 이어붙이기(열로 추가) :
+pd.concat([df1, series객체], axis=1) 
+pd.concat([series객체1, series객체2], axis=1) 
+
+sr1 = pd.Series(['1등급','2등급','3등급','4등급'], name = '등급')
+sr2 = pd.Series(['YB', 'SW', 'HJ', 'EJ'], name='이름')
+df_concat1 = pd.concat([sr2,sr1], axis=1)
+print(df_concat1)
+
+df_concat2 = pd.concat([sr2,sr1], axis=0)
+print(df_concat2)
+
+##########################################
+df1 = pd.read_csv('./datas/df_test.csv', encoding='cp949')
+df2 =pd.read_csv('./datas/df_test2.csv', encoding='cp949')
+df3 = pd.read_csv('./datas/df_test3.csv', encoding='cp949')
+
+df_merge1 = pd.merge(df1, df2)
+print(df_merge1)
+
+df_merge2 = pd.merge(df1, df3, how='outer')
+print(df_merge2)
+
+df_merge_left = pd.merge(df1,df3, how = 'left')
+print(df_merge_left)
+
+df_merge_left = pd.merge(df1,df3, how = 'right')
+print(df_merge_left)
+
+df_merge4 = pd.merge(df1,df3, how = 'left', on="이름")
+print(df_merge4)
+ 
+df_merge5 = pd.merge(df1,df3, how = 'right', on="이름")
+print(df_merge5)
+
+df_merge_left = pd.merge(df2, df3, on="이름")
+print(df_merge_left)   #동일컬럼명에 _x, _y 접미사와 함께 출력됨
+
+df_merge_left = pd.merge(df2, df3, on="이름" , suffixes=("_중간", "_기말")
+print(df_merge_left)
+
+df_concat1 = pd.concat([df2,df3])
+print(df_concat1)  #이어붙이기, 행인덱스 확인
+
+df_concat2 = pd.concat([df2,df3], ignore_index=True)   #set_index 또는 reset_index 사용할 수 있음 
+print(df_concat2)    
+
+df_concat3 = pd.concat([df2,df3], axis=1)
+print(df_concat3)
+
+df_concat4 = pd.concat([df1,df2], axis=1, join='inner')
+print(df_concat4)
+
+df_concat5 = pd.concat([df1,df2], axis=1, join='outer')
+print(df_concat5)
+
+df_concat5= pd.concat([df2,sr1], axis=1)
+print("df와 Series 이어 붙이기(Column)")
+print(df_concat5)
+
+#######################################################################################
+Pivot(피봇) : 여러 분류로 섞인 행 데이터를 열 데이터로 회전시키는 것
+데이터 재구조화  pivot(index, columns, values) 
+index와  columns으로 가져올 value값이 unique(1개만 존재)해야 함 => 2개이상이면 오류 발생
+
+data = {
+"도시": ["서울", "서울", "서울", "부산", "부산", "부산", "인천", "인천"],
+"연도": ["2015", "2010", "2005", "2015", "2010", "2005", "2015", "2010"],
+"인구": [9904312, 9631482, 9762546, 3448737, 3393191, 3512547, 2890451, 263203],
+"지역": ["수도권", "수도권", "수도권", "경상권", "경상권", "경상권", "수도권", "수도권"]
+}
+columns = ["도시", "연도", "인구", "지역"]
+df1 = pd.DataFrame(data, columns=columns) 
+print(df1)
+#행 인덱스 인수로는 "도시", 열 인덱스 인수로는 "연도", 데이터 이름으로 "인구"를 입력
+pivot1 = df1.pivot("도시", "연도", "인구") #df1.pivot(index ="도시", columns= "연도", values= "인구")
+print(pivot1)
+print(pivot1.columns)
+print(pivot1.index)
+#피봇테이블은 set_index 명령과 unstack 명령을 사용해서 만들 수도 있다.
+print(df1.set_index(["도시", "연도"])[["인구"]].unstack())
+
+pivot2 =  pivot1.copy()
+print(pivot2)
+print(pivot2.columns)
+print(pivot2.index)
+pivot2.reset_index(level-0, inplace=True)
+print(pivot2)
+
+count( dropna=True) : 데이터 개수 확인
+df['열이름'].value_counts( dropna=True) : 시리즈 객체의 고유값의 개수 
+
+데이터 재구조화  pivot_table(data 객체, index, columns, values, aggfunc) 
+data = DataFrame({'cust_id': ['c1', 'c1', 'c1', 'c2', 'c2', 'c2', 'c3', 'c3', 'c3'], 
+    'prod_cd': ['p1', 'p2', 'p3', 'p1', 'p2', 'p3', 'p1', 'p2', 'p3'],
+   . 'grade' : ['A', 'A', 'A', 'A', 'A', 'A', 'B', 'B', 'B'], 
+   'pch_amt': [30, 10, 0, 40, 15, 30, 0, 0, 10]})
+print(data.info())
+print(data)
+
+pd.pivot_table(data, index='cust_id', columns='prod_cd', values='pch_amt')
+
+data.pivot(index=['cust_id', 'grade'], columns='prod_cd', values='pch_amt')
+
+pd.pivot_table(data, index=['cust_id', 'grade'], columns='prod_cd', values='pch_amt')
+#pd.pivot_table()은 aggfunc=np.sum 혹은 aggfunc=np.mean 과 같이 집계(aggregation)할 수 있는 함수를 제공함에 따라 index 중복값이 있는 경우 에러 없이 실행됨
+
+data.pivot(index='cust_id', columns=['grade', 'prod_cd'], values='pch_amt')  #pivot() 함수는 중복값이 있을 경우 ValueError를 반환
+
+pd.pivot_table(data, index='cust_id', columns=['grade', 'prod_cd'], values='pch_amt')
+
+
+
+
+
+data.pivot(index='grade', columns='prod_cd', values='pch_amt')  #pivot() 함수는 중복값이 있을 경우 ValueError를 반환
+pd.pivot_table(data, index='grade', columns='prod_cd', values='pch_amt', aggfunc=np.sum)
+
+#margins=True 옵션을 설정해주면 행과 열을 기준으로 합계(All, row sum, column sum)를 결과를 함께 출력
+pd.pivot_table(data, index='grade', columns='prod_cd',  values='pch_amt', aggfunc=np.sum, margins=True)
+
+pd.pivot_table(data, index='grade', columns='prod_cd',  values='pch_amt', aggfunc=np.mean, margins=True)
+
+
+데이터 재구조화  melt(data, id_vars, var_name, value_name) 
+ID 변수를 기준으로 원래 데이터셋에 있던 여러개의 칼럼 이름을 'variable' 칼럼에 위에서 아래로 길게 쌓아놓고, 'value' 칼럼에 ID와 variable에 해당하는 값을 넣어주는 식으로 데이터를 재구조화합니다.
+
+data = pd.DataFrame({'cust_ID' : ['C_001', 'C_001', 'C_002', 'C_002'], 'prd_CD' : ['P_001', 'P_002', 'P_001', 'P_002'],'pch_cnt' : [1, 2, 3, 4],'pch_amt' : [100, 200, 300, 400]})
+print(data.info())
+print(data)
+
+pd.melt(data, id_vars=['cust_ID', 'prd_CD'])
+
+pd.melt(data, id_vars=['cust_ID', 'prd_CD'], var_name='pch_CD', value_name='pch_value')
+
+#melt()의 결과 Dataframe에서 ID가 칼럼으로 생성되며,  pivot_table()은 ID가 index로  생성됩니다.
+data_melt = pd.melt(data, id_vars=['cust_ID', 'prd_CD'], var_name='pch_CD', value_name='pch_value')
+print(data_melt.index)
+print(data_melt.columns)
+
+data_melt_pivot = pd.pivot_table(data_melt, index=['cust_ID', 'prd_CD'], columns='pch_CD', values='pch_value', aggfunc=np.mean)
+print(data_melt_pivot.index)
+print(data_melt_pivot.columns)
+
+
+##########################################################
+df.iloc[: , [0, 2, 5]].groupby('열이름').agg(['sum', 'mean'})
+연산대상.groupby(그룹핑 대상)
+#groupby의 결과는 dictionary 형태로 만들어지지만, 수행시 결과는 보여주지 않고
+그룹핑되었다고 확인만 가능 ....GroupBy객체 생성으로 확인
+
+sub = pd.read_csv('subway.csv', encoding='cp949')
+Q1.  노선번호별 승차에 대한 평균
+sub.groupby(sub['노선번호']).mean()['승차']
+또는 
+sub.groupby(sub['노선번호'])['승차'].mean()
+
+Q2. 모든 행의 0, 2, 3열을 노선번호 열로 그룹핑하고 합계와 평균 연산 결과를 출력
+sub.iloc[:,[0,2,3]].groupby('노선번호').agg(['sum','mean'])
+
+Q3.  노선번호별 승차 데이터 수 확인 (.count, .size)
+sub.groupby(sub['노선번호'])['승차'].count()  
+sub.groupby(sub['노선번호'])['승차'].size()
+
+######################################################################
+import seaborn as sns
+
+titanic = sns.load_dataset('titanic')
+df = titanic[['age','sex','class','fare','survived']]
+Q4. class열에는 first, second, third라는 3개의 값들이 들어 있다. 이 열을 기준으로 그룹객체를 생성하고 그룹별 평균을 출력
+grouped = df.groupby('class').mean()
+for key, group in grouped :
+    print(key)
+    print(len(group))
+    print(group.head())
+    print()
+
+Q5. class열에는 first, second, third라는 3개의 값들이 들어 있다. 이 열을 기준으로 그룹객체를 생성하고 'First '그룹 데이터만 출력
+group1 = df.groupby('class').get_group('First')
+group1.head()
+
+Q6. class열과 성별(sex) 열 기준으로 그룹객체를 생성하고 그룹객체 생성, 각 그룹별 데이터 수와 첫 5 rows출력
+grouped_two = df.groupby(['class','sex'])
+for key, group in grouped_two :
+    print(key)
+    print(len(group))
+    print(group.head())
+    print()
+
+Q7. class 열로 그룹핑하고 fare열의 min값, max 값, age 열에는 mean 연산 결과 출력
+grouped = df.groupby('class').agg({'fare': ['min', 'max'], 'age':'mean'}))
+
+#그룹객체 필터링 : group객체.filter(조건식 함수)
+Q8. class 열로 그룹핑하고 그룹핑한 행수가 200이상인 그룹만 출력
+grouped = df.groupby('class')
+test = grouped.filter(lambda x : len(x) >= 200)
+print(test.head())
+print(test['class'].unique())   #Third, First
+
+Q9.  class 열로 그룹핑하고 age 열의 평균이 30미만인 그룹만 출력
+test = grouped.filter(lambda x : x.age.mean() < 30)
+print(test.head())
+print(test['class'].unique())         #Third, Second
+
+age_filter = grouped.apply(lambda x : x.age.mean() < 30)
+print(age_filter)    # #Third, Second
+
+#그룹객체에 함수 매핑 : group객체.apply( 함수) 은 그룹별로 함수를 적용시킴
+grouped = df.groupby('class')
+grouped.apply(lambda x : x.describe())
+
+
+
+import pandas as pd
+fruit_list = [ ('Orange', 34, 'Yes' ) ,
+             ('Mango', 24, 'No' ) ,
+             ('banana', 14, 'No' ) ,
+             ('Apple', 44, 'Yes' ) ,
+             ('Pineapple', 64, 'No') ,
+             ('Kiwi', 84, 'Yes')  ]
+df = pd.DataFrame(fruit_list, columns = ['Name' , 'Price', 'In_Stock']) 
+grouped_df = df.groupby('In_Stock')
+print(grouped_df.first())   #각 그룹의 첫번째 요소를 반환
+print(grouped_df.get_group('Yes'))  #  그룹 추출
+
+#########################################################################################
+df= pd.read_csv('https://raw.githubusercontent.com/Datamanim/pandas/main/AB_NYC_2019.csv')
+
+Quiz> df 데이터의 각 host_name의 빈도수를 구하고 host_name으로 정렬하여 상위 5개를 출력
+df.host_name.value_counts().sort_index().head()
+
+df.groupby('host_name').size()
+
+Quiz> df 데이터의 각 host_name의 빈도수를 구하고 빈도수 기준 내림차순 정렬한 데이터 프레임을 생성하고 
+빈도수 컬럼은 'counts'로 변경하시오
+df.groupby('host_name').size().to_frame().rename(columns={0:'counts'}).sort_values('counts', ascending=False)
+
+Quiz> df의 데이터를 neighbourhood_group 컬럼 값으로 그룹핑하고 neighbourhood 컬럼값의 개수를 출력
+SampleRun]
+neighbourhood_group neighbourhood 
+Bronx		 	Allerton    00
+Bronx 			Baychester   00
+...
+df.groupby(['neighbourhood_group', 'neighbourhood'], as_index=False).size()
+df.groupby(['neighbourhood_group', 'neighbourhood'] ).size()
+
+Quiz> df의 데이터를 neighbourhood_group와  neighbourhood 컬럼 으로 그룹핑하고 구한 빈도수에서 neighbourhood_group 그룹별로 neighbourhood 컬럼의 빈도수의 최대값만 출력
+SampleRun]
+neighbourhood_group neighbourhood 
+Bronx                       Woodlawn           70
+Brooklyn	    Windsor Terrace              3920
+Manhattan	West Village	2658
+Queens	Woodside	              900
+Staten Island	Woodrow	               48
+df.groupby(['neighbourhood_group', 'neighbourhood'], as_index=False).size().groupby(['neighbourhood_group'], as_index=False).max()
+
+
+Quiz> df의 데이터를 neighbourhood_group 컬럼 값으로 그룹핑에 따른 price컬럼 값의 평균, 분산, 최대, 최소 값을 출력
+df[['neighbourhood_group', 'price']].groupby('neighbourhood_group').agg(['mean', 'var', 'max', 'min'])
+
+##################################################################
+datetime 라이브러리 - 날짜와 시간을 처리하는  다양한 기능을 제공하는 파이썬 라이브러리
+date 객체 - 날짜 처리
+time 객체 - 시간 처리
+datetime 객체 -  날짜와 시간 처리
+
+from datetime import datetime
+now1 = datetime.now()
+print(now1)
+now2 = datetime.today()
+print(now2)
+
+#datetime 객체 생성시 원하는 시간을 직접 인력하여 인자로 전달할 수 있다
+t1  = datetime.now()
+t2  = datetime(1997, 7, 31)
+t3  = datetime(2022, 9,1,0,30,30)
+
+#datetime 객체는 시간 계산을 할 수 있다
+dftime1 = t1-t2
+print(dftime1 )
+print(type(dftime1) )
+
+dftime2 = t2-t1
+print(dftime2 )
+print(type(dftime2) )
+
+#문자열로 저장된 시계열 데이터를 datatime객체로 형변환 함수 : to_datetime()
+ebola = pd.read_csv('./datas/country_timeseries.csv' )
+print(ebola.info())    #Date열이 object로 로딩됨
+ebola['date_dt'] = pd.to_datetime(ebola.Date)
+print(ebola.info()) 
+
+test1 = pd.DataFrame({"order_day":['01/01/15', '02/01/15', '03/01/15']})
+test1['date_dt1'] = pd.to_datetime(test1["order_day"], format='%d/%m/%y')
+
+%a, %A 요일
+%w 
+%d
+%b %B %m 월 
+%y %Y
+%H %I
+%p
+%M 분
+%S 초
+
+now() - 정밀한 시간 단위까지 반환 / 표현
+날짜 /시간 데이터에서 부분적 데이터 값 사용하려면 strftime()
+now=  datetime.now()
+nowDate = now.strftime('%Y-%m-%d')
+print(nowDate , type(nowDate ))
+nowTime =  now.strftime('%H:%M:%S')
+print(nowTime , type(nowTime ))
+
+ebola1 = pd.read_csv('./datas/country_timeseries.csv' , parse_dates=['Date'] )
+print(ebola1.info())
+
+datetime객체.year속성
+datetime객체.mont속성
+datetime객체.day속성
+
+date_series = pd.Series(['2019-02-19', '2019-02-20','2019-02-21'])
+d1 = pd.to_datetime(date_series)
+print(d1)
+print(d1[0].year)
+print(d1[1].month)
+print(d1[2].day)
+
+DataFrame객체와 Series객체의 열 데이터에서 문자열 처리하려면 str속성으로 문자열 메서드 사용
+datetime객체.dt속성으로 datetime객체의 속성과 메서드를 사용할 수 있습니다.
+
+ebola1 ['year'], ebola1 ['month'],  ebola1 ['day'] =  (ebola1.Date.dt.year, ebola1.Date.dt.month, ebola1.Date.dt.day)
+ebola1[['Date', 'year', 'month', 'day']].head()
+
+Q1. 에볼라 데이터셋에서 최초 발병일 계산하기
+print(ebola1.Date.min())
+
+ebola1.groupby(['year', 'month']).size()
+
+
+
+##############################################
+세미 프로젝트 주제 : 
+covid-19 전후 지역과 업종특성에 따른 소비패턴의 변화
+각 팀별 2~3인을 한 조로 구성하여 진행
+
+1. 송정재 권대훈 김은진 
+2. 이수민 방승현 안진혁 
+3. 황선미 현지수 이승호 
+4. 김태현 안유정 두민규 
+5. 허다정 진용완 정진환 
+6. 김현아 박정현 유정민 
+7. 최윤지 유명상 문채은 
+8. 서정훈 신상민 양서연
+
+
+#############################################################
+pandas 시계열
+matplotlib 
+seaborn
+wordcloud
+지도 시각화
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
